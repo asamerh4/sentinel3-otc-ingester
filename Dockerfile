@@ -2,7 +2,7 @@ FROM centos
 
 MAINTAINER Hubert Asamer
 
-RUN yum -y update && yum -y install epel-release && yum -y update && yum -y install python-pip && pip install --upgrade pip  && pip install awscli certifi
+RUN yum -y update && yum -y install epel-release && yum -y update && yum -y install python-pip jq bsdtar && pip install --upgrade pip  && pip install awscli certifi
 
 COPY bin /root/bin
 

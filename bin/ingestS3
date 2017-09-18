@@ -1,3 +1,24 @@
 #!/bin/bash
-aws --endpoint-url https://obs.eu-de.otc.t-systems.com s3 ls
-echo $test
+
+set -e
+
+echo *- Download Sentinel-3 product
+
+curl -u $DATAHUB_USER:$DATAHUB_PW $SOURCE_PRODUCT | bsdtar -xf-
+
+relorbit=$(ls | grep S3 | awk -F "_" '{print $13}')
+cycle=$(ls | grep S3 | awk -F "_" '{print $12}')
+startdatetime=$(ls | grep S3 | awk -F "_" '{print $8}')
+year=${startdatetime::4}
+month=${startdatetime:4:2}
+day=${startdatetime:6:2}
+
+cd S3A*
+ls -ltr
+
+echo *- Sync to OTC-S3
+aws --endpoint-url https://obs.eu-de.otc.t-systems.com s3 sync . $TARGET_BUCKET_PREFIX/$relorbit/$year/$month/$day/$cycle
+
+cd ..
+rm -rf S3*
+
