@@ -6,6 +6,6 @@ BUILD=$(git rev-parse --short HEAD)
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-docker build -t asamerh4/sentinel3-otc-ingester:$BUILD .
+docker build -t asamerh4/sentinel3-s3-ingester:$BUILD .
 
-echo -e ${YELLOW}"**build finished -> asamerh4/sentinel3-otc-ingester:$BUILD"${NC}
+echo -e ${YELLOW}"**build finished -> asamerh4/sentinel3-s3-ingester:$BUILD"${NC}
