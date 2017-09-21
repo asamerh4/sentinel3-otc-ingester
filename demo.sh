@@ -8,6 +8,8 @@ NC='\033[0m' # No Color
 
 docker run \
   --rm -it \
+  --net=host \
+  -e USERDATA_MTD_URL="localhost/user-data" \
   -e DATAHUB_USER=XXXXXX \
   -e DATAHUB_PW=XXXXXXX \
   -e TARGET_BUCKET_PREFIX="s3://sentinel3-rbt/relorbit" \
