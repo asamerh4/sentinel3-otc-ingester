@@ -2,10 +2,15 @@
 
 set -e
 
+echo *- Check S3-bucket
+uuid_from_s3=$(aws --endpoint-url https://obs.eu-de.otc.t-systems.com s3api list-objects --bucket sentinel3-rbt --prefix uuids | jq '.Contents[].Key | select(. | contains("'$UUID'"))')
+
+if [ -z "$uuid_from_s3" ]; then
 echo *- Download Sentinel-3 product
 
 curl -u $DATAHUB_USER:$DATAHUB_PW $SOURCE_PRODUCT | bsdtar -xf-
 
+product=$(ls | grep S3)
 relorbit=$(ls | grep S3 | awk -F "_" '{print $13}')
 framealongtrack=$(ls | grep S3 | awk -F "_" '{print $14}')
 startdatetime=$(ls | grep S3 | awk -F "_" '{print $8}')
@@ -17,8 +22,25 @@ cd S3A*
 ls -ltr
 
 echo *- Sync to OTC-S3
-aws --endpoint-url https://obs.eu-de.otc.t-systems.com s3 sync . $TARGET_BUCKET_PREFIX/$relorbit/$((10#$framealongtrack))/$year/$month/$day
+touch productinfo.json
+echo $TARGET_BUCKET_PREFIX/products/$product > productinfo.json
+aws --endpoint-url https://obs.eu-de.otc.t-systems.com s3 sync . $TARGET_BUCKET_PREFIX/frames/$relorbit/$framealongtrack/$year/$month/$day
+
+echo *- Register product
+touch frameinfo.json
+echo $TARGET_BUCKET_PREFIX/frames/$relorbit/$framealongtrack/$year/$month/$day > frameinfo.json
+aws --endpoint-url https://obs.eu-de.otc.t-systems.com s3 cp frameinfo.json $TARGET_BUCKET_PREFIX/products/$product/frameinfo.json
+aws --endpoint-url https://obs.eu-de.otc.t-systems.com s3 cp xfdumanifest.xml $TARGET_BUCKET_PREFIX/products/$product/xfdumanifest.xml
+
+echo *-Register UUID
+touch $UUID
+echo $product  > $UUID
+aws --endpoint-url https://obs.eu-de.otc.t-systems.com s3 cp $UUID $TARGET_BUCKET_PREFIX/uuids/$UUID
 
 cd ..
 rm -rf S3*
 
+else
+echo $UUID already uploaded...exiting.
+exit 0
+fi
